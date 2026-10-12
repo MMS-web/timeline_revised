@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The ISO Story — Animated Timeline</title>
+
+<style>
+  :root {
+    --iso-blue: #005baa;
+    --iso-dark: #003b70;
+    --iso-light: #eaf3fb;
+    --iso-text: #17324d;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f9fc;
+    color: var(--iso-text);
+  }
+
+  .timeline-section {
+    padding: 72px 0 64px;
+    overflow: hidden;
+  }
+
+  .section-heading {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 0 28px;
+  }
+
+  .eyebrow {
+    color: var(--iso-blue);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: clamp(34px, 5vw, 58px);
+    letter-spacing: -1.8px;
+    margin: 14px 0;
+    color: var(--iso-dark);
+  }
+
+  .intro {
+    color: #63758a;
+    line-height: 1.7;
+    max-width: 620px;
+  }
+
+  .timeline-window {
+    position: relative;
+    overflow: hidden;
+    padding: 30px 0 36px;
+    cursor: grab;
+  }
+
+  /* Soft fade at both edges */
+  .timeline-window::before,
+  .timeline-window::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: clamp(24px, 7vw, 100px);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .timeline-window::before {
+    left: 0;
+    background: linear-gradient(90deg, #f7f9fc, transparent);
+  }
+
+  .timeline-window::after {
+    right: 0;
+    background: linear-gradient(-90deg, #f7f9fc, transparent);
+  }
+
+  .timeline-track {
+    display: flex;
+    width: max-content;
+    animation: travel 65s linear infinite;
+    will-change: transform;
+  }
+
+  .timeline-window:hover .timeline-track,
+  .timeline-window:focus-within .timeline-track,
+  .timeline-window.paused .timeline-track {
+    animation-play-state: paused;
+  }
+
+  .timeline-set {
+    display: flex;
+    flex-shrink: 0;
+    gap: 24px;
+    padding-right: 24px;
+  }
+
+  .milestone {
+    width: 270px;
+    flex-shrink: 0;
+    position: relative;
+    padding-top: 38px;
+  }
+
+  /* The horizontal timeline */
+  .milestone::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: -24px;
+    top: 12px;
+    height: 3px;
+    background: #c8dbed;
+  }
+
+  .milestone::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 0;
+    width: 17px;
+    height: 17px;
+    background: white;
+    border: 4px solid var(--iso-blue);
+    border-radius: 50%;
+    z-index: 1;
+    transition: background .3s, transform .3s;
+  }
+
+  .milestone:hover::after {
+    background: var(--iso-blue);
+    transform: scale(1.25);
+  }
+
+  .year {
+    display: inline-block;
+    color: var(--iso-blue);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 15px;
+  }
+
+  .milestone-card {
+    min-height: 190px;
+    background: white;
+    border: 1px solid #e1eaf3;
+    border-radius: 12px;
+    padding: 23px 20px;
+    box-shadow: 0 8px 28px rgb(25 63 100 / 5%);
+    transition: transform .3s, box-shadow .3s;
+  }
+
+  .milestone:hover .milestone-card {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 35px rgb(25 63 100 / 12%);
+  }
+
+  .milestone-card h2 {
+    font-size: 17px;
+    line-height: 1.4;
+    margin: 0 0 12px;
+    color: var(--iso-dark);
+  }
+
+  .milestone-card p {
+    font-size: 13px;
+    color: #66788b;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .timeline-footer {
+    max-width: 1100px;
+    padding: 0 28px;
+    margin: 8px auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .timeline-footer p {
+    color: #718096;
+    font-size: 12px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  button {
+    border: 1px solid #cbd9e8;
+    border-radius: 24px;
+    padding: 11px 18px;
+    background: white;
+    color: var(--iso-dark);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  button:hover {
+    background: var(--iso-light);
+    border-color: var(--iso-blue);
+  }
+
+  button:focus-visible {
+    outline: 3px solid #76b7f5;
+    outline-offset: 3px;
+  }
+
+  @keyframes travel {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 600px) {
+    .timeline-section { padding-top: 44px; }
+    .milestone { width: 245px; }
+    .milestone-card { min-height: 200px; }
+    .timeline-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-track { animation: none; }
+    *, *::before, *::after { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body>
+<section class="timeline-section" aria-labelledby="timeline-title">
+
+  <header class="section-heading">
+    <div class="eyebrow">International Organization for Standardization</div>
+    <h1 id="timeline-title">The ISO story</h1>
+    <p class="intro">
+      From a shared vision for international standardization to solutions
+      that support quality, safety, trade and cooperation around the world.
+      Explore the milestones that shaped ISO.
+    </p>
+  </header>
+
+  <div class="timeline-window" id="timelineWindow"
+       tabindex="0" aria-label="Automatically scrolling ISO history timeline">
+
+    <div class="timeline-track" id="timelineTrack">
+
+      <div class="timeline-set" id="timelineOriginal">
+
+        <article class="milestone">
+          <span class="year">1946</span>
+          <div class="milestone-card">
+            <h2>A shared vision</h2>
+            <p>Delegates from 25 countries meet in London to discuss the future of international standardization.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1947</span>
+          <div class="milestone-card">
+            <h2>ISO is born</h2>
+            <p>ISO officially comes into existence on 23 February, beginning with 67 technical committees.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1949</span>
+          <div class="milestone-card">
+            <h2>First offices in Geneva</h2>
+            <p>ISO moves into a small private house in Geneva as its Central Secretariat develops.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1951</span>
+          <div class="milestone-card">
+            <h2>The first ISO standard</h2>
+            <p>ISO/R 1:1951 establishes a reference temperature for industrial length measurements.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1960</span>
+          <div class="milestone-card">
+            <h2>Common units of measurement</h2>
+            <p>ISO publishes ISO 31 on quantities and units, supporting consistency in measurement worldwide.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1971</span>
+          <div class="milestone-card">
+            <h2>Environment becomes a focus</h2>
+            <p>ISO creates its first two environmental technical committees, covering air quality and water quality.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1987</span>
+          <div class="milestone-card">
+            <h2>Quality management</h2>
+            <p>ISO publishes the first edition of its ISO 9000 family of quality management standards.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1995</span>
+          <div class="milestone-card">
+            <h2>ISO goes online</h2>
+            <p>ISO launches its first website, expanding access to information about international standards.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">1996</span>
+          <div class="milestone-card">
+            <h2>Environmental management</h2>
+            <p>ISO 14001 is introduced, providing a framework for environmental management systems.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">2005</span>
+          <div class="milestone-card">
+            <h2>Information security</h2>
+            <p>ISO and IEC publish ISO/IEC 27001, helping organizations manage information security risks.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">2018</span>
+          <div class="milestone-card">
+            <h2>Safer workplaces</h2>
+            <p>ISO 45001:2018 provides requirements for occupational health and safety management systems.</p>
+          </div>
+        </article>
+
+        <article class="milestone">
+          <span class="year">Today</span>
+          <div class="milestone-card">
+            <h2>Standards for a changing world</h2>
+            <p>ISO continues to bring experts together to develop international solutions for evolving global needs.</p>
+          </div>
+        </article>
+
+      </div>
+      <!-- JavaScript creates a matching duplicate for seamless movement -->
+    </div>
+  </div>
+
+  <footer class="timeline-footer">
+    <p>Explore ISO's journey through international standardization.</p>
+    <div class="controls">
+      <button id="pauseButton" type="button"
+              aria-pressed="false">Ⅱ Pause animation</button>
+      <button id="speedButton" type="button"
+              aria-pressed="false">Speed: Normal</button>
+    </div>
+  </footer>
+
+</section>
+
+<script>
+  const windowEl = document.getElementById("timelineWindow");
+  const track = document.getElementById("timelineTrack");
+  const original = document.getElementById("timelineOriginal");
+  const pauseButton = document.getElementById("pauseButton");
+  const speedButton = document.getElementById("speedButton");
+
+  // Duplicate the milestones so the animation loops seamlessly.
+  const duplicate = original.cloneNode(true);
+  duplicate.removeAttribute("id");
+  duplicate.setAttribute("aria-hidden", "true");
+
+  // Avoid duplicate IDs inside the cloned content.
+  duplicate.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+  track.appendChild(duplicate);
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  let paused = reducedMotion.matches;
+  let fast = false;
+
+  function updateAnimation() {
+    track.style.animationDuration = fast ? "35s" : "65s";
+    track.style.animationPlayState = paused ? "paused" : "running";
+    pauseButton.textContent = paused
+      ? "▶ Play animation"
+      : "Ⅱ Pause animation";
+    pauseButton.setAttribute("aria-pressed", String(paused));
+    speedButton.textContent = fast ? "Speed: Fast" : "Speed: Normal";
+    speedButton.setAttribute("aria-pressed", String(fast));
+  }
+
+  pauseButton.addEventListener("click", () => {
+    paused = !paused;
+    updateAnimation();
+  });
+
+  speedButton.addEventListener("click", () => {
+    fast = !fast;
+    updateAnimation();
+  });
+
+  // Pause when the visitor focuses the timeline with a keyboard.
+  windowEl.addEventListener("focusin", () => {
+    track.style.animationPlayState = "paused";
+  });
+
+  windowEl.addEventListener("focusout", () => {
+    updateAnimation();
+  });
+
+  reducedMotion.addEventListener("change", event => {
+    if (event.matches) paused = true;
+    updateAnimation();
+  });
+
+  updateAnimation();
+</script>
+</body>
+</html>
